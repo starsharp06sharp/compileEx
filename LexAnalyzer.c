@@ -14,7 +14,6 @@ wchar_t myErrStr[ERR_STR_SIZE];
 
 int main(int argc, char *argv[])
 {
-    setlocale(LC_ALL, "en_US.UTF-8");
     wchar_t ch;
     int res;
     parseArgs(argc, argv);
@@ -91,6 +90,7 @@ void parseArgs(int argc, char *argv[])
             fprintf(stderr, "usage: LexAnalyzer inputFileName[ outputFileName]\n");
             exit(1);
     }
+    setlocale(LC_ALL, "en_US.UTF-8");
     iFile = fopen(iFileName, "r");
     if (iFile == NULL) {
         perror("fopen");
