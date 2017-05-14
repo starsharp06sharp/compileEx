@@ -1,10 +1,13 @@
 CFLAGS := -Wall -O2
 
-targets = LexAnalyzer
+targets = LexAnalyzer SyntaxAnalyzer
 
 all: $(targets)
 
-LexAnalyzer: ex1/LexAnalyzer.c ex1/LexAnalyzer.h
+LexAnalyzer: LexAnalyzer.c LexAnalyzer.h
+	$(CC) $< -o $@ $(CFLAGS)
+
+SyntaxAnalyzer: SyntaxAnalyzer.c SyntaxAnalyzer.h
 	$(CC) $< -o $@ $(CFLAGS)
 
 .PONY: clean
