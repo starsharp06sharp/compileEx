@@ -1,20 +1,12 @@
-procedure E;
 begin
-    T;
-    E’
-end;
-procedure T;
-begin
-    F;
-    T’
-end;
-procedure E’;
-    if lookahead=‘+’ then begin match(‘+’);
-        T;
-        E’
+  integer k;
+  integer function F(n);
+    begin
+      integer n;
+      if n<=0 then F:=1
+      else F:=n*F(n-1)
     end;
-procedure T’;
-    if lookahead=‘*’ then begin match(‘*’);
-        F;
-        T’
-    end;
+  read(m);
+  k:=F(m);
+  write(k)
+end
