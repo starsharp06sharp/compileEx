@@ -2,14 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wctype.h>
+#include <stdarg.h>
 #include <errno.h>
 #include <wchar.h>
 #include <locale.h>
 #include "SyntaxAnalyzer.h"
 
+FILE *iFile, *oFile, *varFile, *proFile, *eFile;
 struct Word word;
 int lineNo = 1;
-FILE *iFile, *oFile, *varFile, *proFile, *eFile;
+wchar_t now_func[MAX_BUF_SIZE];
+int level = 0;
+int vaddr = 0;
 
 int main(int argc, char *argv[])
 {
@@ -93,9 +97,10 @@ void parseArgs(int argc, char *argv[])
 
 void advance()
 {
-    fwscanf(iFile, L"%hd %ls", word.code, word.str);
+    fwscanf(iFile, L"%hd %ls", &(word.code), &(word.str));
     fwprintf(oFile, L"%hd %ls\n", word.code, word.str);
     if (word.code == $EOLN) {
+        lineNo++;
         advance();
     } else if (word.code == $EOF) {
         exit(0);
@@ -119,7 +124,7 @@ void raiseError(const wchar_t *format, ...)
 
 #define exceptWord(w) \
     if (word.code != w) { \
-        raiseError(L"Need " L###w L" statement"); \
+        raiseError(L"In function '%s': Need " L###w L"(%d) statement", __FUNCTION__, w); \
     } \
     advance();
 
@@ -161,7 +166,7 @@ void assignment()
 
 void write()
 {
-    exceptWord($READ);
+    exceptWord($WRITE);
     exceptWord($LPAR);
     var();
     exceptWord($RPAR);
@@ -169,7 +174,7 @@ void write()
 
 void read()
 {
-    exceptWord($WRITE);
+    exceptWord($READ);
     exceptWord($LPAR);
     var();
     exceptWord($RPAR);
@@ -179,7 +184,6 @@ void funcBody()
 {
     exceptWord($BEGIN);
     declarationTable();
-    exceptWord($SEM);
     executionTable();
     exceptWord($END);
 }
@@ -189,34 +193,15 @@ void argument()
     var();
 }
 
-void funcDeclaration()
-{
-    exceptWord($INTEGER);
-    exceptWord($FUNCTION);
-    exceptWord($SYMBOL);
-    exceptWord($LPAR);
-    argument();
-    exceptWord($RPAR);
-    exceptWord($SEM);
-    funcBody();
-}
-
 void var()
 {
     exceptWord($SYMBOL);
-}
-
-void varDeclaration()
-{
-    exceptWord($INTEGER);
-    var();
 }
 
 void subprogram()
 {
     exceptWord($BEGIN);
     declarationTable();
-    exceptWord($SEM);
     executionTable();
     exceptWord($END);
 }
@@ -224,4 +209,114 @@ void subprogram()
 void program()
 {
     subprogram();
+}
+
+void declaration()
+{
+    exceptWord($INTEGER);
+    declaration2();
+}
+
+void declaration2()
+{
+    if (word.code == $FUNCTION) {
+        exceptWord($FUNCTION);
+        exceptWord($SYMBOL);
+        exceptWord($LPAR);
+        argument();
+        exceptWord($RPAR);
+        exceptWord($SEM);
+        funcBody();
+    } else {
+        var();
+    }
+}
+
+void execution()
+{
+    if (word.code == $READ) {
+        read();
+    } else if (word.code == $WRITE) {
+        write();
+    } else if (word.code == $IF) {
+        conditionStatement();
+    } else {
+        assignment();
+    }
+}
+
+void factor()
+{
+    if (word.code == $CONSTANT) {
+        exceptWord($CONSTANT);
+    } else {
+        exceptWord($SYMBOL);
+        if (word.code == $LPAR) {
+            //function call
+            exceptWord($LPAR);
+            arithmeticalExpression();
+            exceptWord($RPAR);
+        }
+    }
+}
+
+void declarationTable()
+{
+    declaration();
+    declarationTable2();
+}
+
+void declarationTable2()
+{
+    if (word.code == $SEM) {
+        exceptWord($SEM);
+        if (word.code != $INTEGER) return;
+        declaration();
+        declarationTable2();
+    }
+}
+
+void executionTable()
+{
+    execution();
+    executionTable2();
+}
+
+void executionTable2()
+{
+    if (word.code == $SEM) {
+        exceptWord($SEM);
+        execution();
+        executionTable2();
+    }
+}
+
+void arithmeticalExpression()
+{
+    item();
+    arithmeticalExpression2();
+}
+
+void arithmeticalExpression2()
+{
+    if (word.code == $SUB) {
+        exceptWord($SUB);
+        item();
+        arithmeticalExpression2();
+    }
+}
+
+void item()
+{
+    factor();
+    item2();
+}
+
+void item2()
+{
+    if (word.code == $MUL) {
+        exceptWord($MUL);
+        factor();
+        item2();
+    }
 }

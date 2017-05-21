@@ -1,3 +1,6 @@
+#ifndef WORD_H
+#define WORD_H
+
 #define $BEGIN 1
 #define $END 2
 #define $INTEGER 3
@@ -23,3 +26,5 @@
 #define $SEM 23
 #define $EOLN 24
 #define $EOF 25
+
+#endif
