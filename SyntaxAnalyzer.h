@@ -2,6 +2,7 @@
 #define SYNTAXANALYZER_H
 
 #include <wchar.h>
+#include <stdbool.h>
 #include "word.h"
 
 const char oExtName[] = ".dys";
@@ -9,17 +10,17 @@ const char varExtName[] = ".var";
 const char proExtName[] = ".pro";
 const char eExtName[] = ".err";
 
-#define MAX_BUF_SIZE 4096
+#define MAX_BUF_SIZE 1024
+#define SYM_TABLE_SIZE 1024
 
 struct Word {
-    short code;
+    short type;
     wchar_t str[MAX_BUF_SIZE];
 };
 
 void program();                 //程序
 void subprogram();              //分程序
 void declarationTable();        //说明语句表
-void declarationTable2();       //说明语句表2
 void declaration();             //说明语句
 void declaration2();            //说明语句2
 // void varDeclaration();          //变量说明
@@ -44,6 +45,9 @@ void relationOp();              //关系运算符
 
 void advance();
 void raiseError(const wchar_t *format, ...);
+void addVar(const wchar_t *vname, int vkind);
+void addFunc(int faddr, int laddr);
+bool checkSymExist(const wchar_t* sym, bool global);
 
 void parseArgs(int argc, char *argv[]);
 

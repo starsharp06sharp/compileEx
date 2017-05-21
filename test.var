@@ -1,0 +1,14 @@
+vname: k
+vpro: [global]
+vkind: 0
+vtype: ints
+vlev: 0
+vaddr: 0
+
+vname: n
+vpro: F
+vkind: 1
+vtype: ints
+vlev: 1
+vaddr: 1
+
