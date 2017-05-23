@@ -1,4 +1,7 @@
 LexAnalyzer
 SyntaxAnalyzer
 *.dyd
+*.dys
 *.err
+*.var
+*.pro
