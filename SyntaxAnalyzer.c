@@ -1,12 +1,12 @@
+#include "SyntaxAnalyzer.h"
+#include <errno.h>
+#include <locale.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wctype.h>
-#include <stdarg.h>
-#include <errno.h>
 #include <wchar.h>
-#include <locale.h>
-#include "SyntaxAnalyzer.h"
+#include <wctype.h>
 
 FILE *iFile, *oFile, *varFile, *proFile, *eFile;
 struct Word word;
@@ -22,8 +22,8 @@ size_t scopeStart = 0;
 int main(int argc, char *argv[])
 {
     parseArgs(argc, argv);
-    advance();//读入第一个符号
-    program();//开始解析
+    advance();  //读入第一个符号
+    program();  //开始解析
     return 0;
 }
 
@@ -38,8 +38,10 @@ char *getFileName(const char *iName, const char *extName)
         while (i > 0) {
             if (iName[i--] == '.') break;
         }
-        if (i == 0) baseNameLen = iNameLen;
-        else baseNameLen = i + 1;
+        if (i == 0)
+            baseNameLen = iNameLen;
+        else
+            baseNameLen = i + 1;
         baseName = malloc((baseNameLen + 1) * sizeof(char));
         strncpy(baseName, iName, baseNameLen);
         baseName[baseNameLen] = '\0';
@@ -63,12 +65,12 @@ void parseArgs(int argc, char *argv[])
 {
     char *iFileName;
     switch (argc) {
-        case 2:
-            iFileName = argv[1];
-            break;
-        default:
-            fprintf(stderr, "usage: SyntaxAnalyzer inputFileName\n");
-            exit(1);
+    case 2:
+        iFileName = argv[1];
+        break;
+    default:
+        fprintf(stderr, "usage: SyntaxAnalyzer inputFileName\n");
+        exit(1);
     }
     setlocale(LC_ALL, "en_US.UTF-8");
     iFile = fopen(iFileName, "r");
@@ -126,7 +128,7 @@ void raiseError(const wchar_t *format, ...)
     exit(1);
 }
 
-bool checkSymExist(const wchar_t* sym, bool global)
+bool checkSymExist(const wchar_t *sym, bool global)
 {
     int i = scopeStart;
     if (global) i = 0;
@@ -162,21 +164,27 @@ void addFunc(int faddr, int laddr)
     fwprintf(proFile, L"\n");
 }
 
-#define exceptWord(w) \
-    if (word.type != w) { \
-        raiseError(L"In function '%s': Need " L###w L"(%d) statement", __FUNCTION__, w); \
-    } \
+#define exceptWord(w)                                                   \
+    if (word.type != w) {                                               \
+        raiseError(L"In function '%s': Need " L## #w L"(%d) statement", \
+                   __FUNCTION__, w);                                    \
+    }                                                                   \
     advance();
 
 void relationOp()
 {
-    switch(word.type) {
-    case $E:case $NE:case $LE:case $L:case $GE:case $G:
+    switch (word.type) {
+    case $E:
+    case $NE:
+    case $LE:
+    case $L:
+    case $GE:
+    case $G:
         advance();
-    break;
+        break;
     default:
         raiseError(L"Need relationOp");
-    break;
+        break;
     }
 }
 
@@ -255,10 +263,7 @@ void subprogram()
     exceptWord($END);
 }
 
-void program()
-{
-    subprogram();
-}
+void program() { subprogram(); }
 
 void declaration()
 {
@@ -326,7 +331,7 @@ void factor()
         }
         exceptWord($SYMBOL);
         if (word.type == $LPAR) {
-            //function call
+            // function call
             exceptWord($LPAR);
             arithmeticalExpression();
             exceptWord($RPAR);
